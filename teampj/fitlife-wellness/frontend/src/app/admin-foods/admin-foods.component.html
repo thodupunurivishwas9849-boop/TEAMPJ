@@ -1,0 +1,275 @@
+<!-- Admin Header -->
+<header class="bg-white shadow-sm border-b">
+  <div class="container mx-auto px-4 py-4">
+    <div class="flex justify-between items-center">
+      <div>
+        <h1 class="text-2xl font-bold text-green-600">Food Management</h1>
+        <p class="text-gray-600">Add, edit, and manage food items</p>
+      </div>
+      <div class="flex space-x-3">
+        <button
+          (click)="openAddForm()"
+          class="btn-primary">
+          + Add New Food
+        </button>
+        <button
+          (click)="goBack()"
+          class="btn-secondary">
+          ← Dashboard
+        </button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="container mx-auto px-4 py-8">
+  <!-- Add/Edit Form -->
+  <div *ngIf="showForm" class="mb-8 card">
+    <div class="bg-gray-50 px-6 py-4 border-b border-gray-200">
+      <h2 class="text-lg font-semibold text-gray-800">
+        {{isEditing ? 'Edit Food' : 'Add New Food'}}
+      </h2>
+    </div>
+
+    <form class="p-6 space-y-6">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Name -->
+        <div>
+          <label for="name" class="block text-sm font-medium text-gray-700 mb-2">
+            Food Name *
+          </label>
+          <input
+            type="text"
+            id="name"
+            [(ngModel)]="formData.name"
+            name="name"
+            required
+            class="input-primary"
+            placeholder="Enter food name">
+        </div>
+
+        <!-- Type -->
+        <div>
+          <label for="type" class="block text-sm font-medium text-gray-700 mb-2">
+            Type *
+          </label>
+          <select
+            id="type"
+            [(ngModel)]="formData.type"
+            name="type"
+            required
+            class="input-primary">
+            <option value="">Select Type</option>
+            <option *ngFor="let type of foodTypes" [value]="type">{{type}}</option>
+          </select>
+        </div>
+
+        <!-- Category -->
+        <div>
+          <label for="category" class="block text-sm font-medium text-gray-700 mb-2">
+            Category *
+          </label>
+          <select
+            id="category"
+            [(ngModel)]="formData.category"
+            name="category"
+            required
+            class="input-primary">
+            <option value="">Select Category</option>
+            <option *ngFor="let category of categories" [value]="category">{{category}}</option>
+          </select>
+        </div>
+
+        <!-- Description -->
+        <div class="md:col-span-2">
+          <label for="description" class="block text-sm font-medium text-gray-700 mb-2">
+            Description *
+          </label>
+          <textarea
+            id="description"
+            [(ngModel)]="formData.description"
+            name="description"
+            required
+            rows="3"
+            class="input-primary"
+            placeholder="Describe the food item"></textarea>
+        </div>
+
+        <!-- Benefits -->
+        <div class="md:col-span-2">
+          <label for="benefits" class="block text-sm font-medium text-gray-700 mb-2">
+            Benefits * (comma separated)
+          </label>
+          <input
+            type="text"
+            id="benefits"
+            [(ngModel)]="formData.benefits"
+            name="benefits"
+            required
+            class="input-primary"
+            placeholder="e.g. Rich in Vitamin C, Boosts Immunity, Good for digestion">
+          <p class="text-xs text-gray-500 mt-1">Separate multiple benefits with commas</p>
+        </div>
+
+        <!-- Nutrients -->
+        <div class="md:col-span-2">
+          <label for="nutrients" class="block text-sm font-medium text-gray-700 mb-2">
+            Nutrients * (JSON format)
+          </label>
+          <textarea
+            id="nutrients"
+            [(ngModel)]="formData.nutrients"
+            name="nutrients"
+            required
+            rows="6"
+            class="input-primary font-mono text-sm"
+            placeholder='{
+  "calories": "52 kcal",
+  "protein": "0.3g",
+  "carbs": "13.8g",
+  "fiber": "2.4g"
+}'></textarea>
+          <p class="text-xs text-gray-500 mt-1">Enter nutrients as valid JSON</p>
+        </div>
+      </div>
+
+      <!-- Error Message -->
+      <div *ngIf="errorMessage" class="bg-red-50 border border-red-200 rounded-md p-3">
+        <p class="text-red-600 text-sm">{{errorMessage}}</p>
+      </div>
+
+      <!-- Buttons -->
+      <div class="flex justify-end space-x-3">
+        <button
+          type="button"
+          (click)="cancelEdit()"
+          class="btn-secondary">
+          Cancel
+        </button>
+        <button
+          type="button"
+          (click)="saveFood()"
+          [disabled]="isSubmitting"
+          class="btn-primary disabled:opacity-50 disabled:cursor-not-allowed">
+          <span *ngIf="isSubmitting" class="inline-block mr-2">
+            <svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+          </span>
+          {{isSubmitting ? 'Saving...' : (isEditing ? 'Update Food' : 'Add Food')}}
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading && !showForm" class="flex justify-center items-center py-12">
+    <div class="w-8 h-8 animate-spin rounded-full border-4 border-green-200 border-t-green-600"></div>
+    <span class="ml-3 text-gray-600">Loading foods...</span>
+  </div>
+
+  <!-- Error Message for loading -->
+  <div *ngIf="errorMessage && !showForm" class="bg-red-50 border border-red-200 rounded-md p-4 mb-6">
+    <p class="text-red-600">{{errorMessage}}</p>
+    <button
+      (click)="loadFoods()"
+      class="mt-2 btn-primary text-sm">
+      Try Again
+    </button>
+  </div>
+
+  <!-- Foods List -->
+  <div *ngIf="!isLoading && !showForm" class="card">
+    <!-- Table Header -->
+    <div class="bg-gray-50 px-6 py-4 border-b border-gray-200">
+      <h2 class="text-lg font-semibold text-gray-800">All Foods ({{foods.length}})</h2>
+    </div>
+
+    <div *ngIf="foods.length === 0" class="text-center py-12">
+      <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z"></path>
+      </svg>
+      <p class="mt-4 text-gray-500">No foods added yet</p>
+      <button
+        (click)="openAddForm()"
+        class="mt-4 btn-primary">
+        Add First Food
+      </button>
+    </div>
+
+    <div *ngIf="foods.length > 0" class="overflow-x-auto">
+      <table class="min-w-full divide-y divide-gray-200">
+        <thead class="bg-gray-50">
+          <tr>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Food
+            </th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Type
+            </th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Category
+            </th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Benefits
+            </th>
+            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Actions
+            </th>
+          </tr>
+        </thead>
+        <tbody class="bg-white divide-y divide-gray-200">
+          <tr *ngFor="let food of foods" class="hover:bg-gray-50">
+            <td class="px-6 py-4 whitespace-nowrap">
+              <div class="flex items-center">
+                <div *ngIf="food.imageUrl" class="flex-shrink-0 h-10 w-10">
+                  <img class="h-10 w-10 rounded-full object-cover" [src]="food.imageUrl" [alt]="food.name">
+                </div>
+                <div class="flex-shrink-0 h-10 w-10" *ngIf="!food.imageUrl">
+                  <div class="h-10 w-10 rounded-full bg-green-500 flex items-center justify-center">
+                    <span class="text-white font-medium text-sm">{{food.name.charAt(0).toUpperCase()}}</span>
+                  </div>
+                </div>
+                <div class="ml-4">
+                  <div class="text-sm font-medium text-gray-900">{{food.name}}</div>
+                  <div class="text-sm text-gray-500 truncate max-w-xs">{{food.description}}</div>
+                </div>
+              </div>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
+                {{food.type}}
+              </span>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
+                {{food.category}}
+              </span>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <div class="text-sm text-gray-900 max-w-xs truncate">
+                {{food.benefits.slice(0, 2).join(', ')}}
+                <span *ngIf="food.benefits.length > 2">...</span>
+              </div>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+              <div class="flex justify-end space-x-2">
+                <button
+                  (click)="editFood(food)"
+                  class="text-blue-600 hover:text-blue-900 bg-blue-50 hover:bg-blue-100 px-3 py-1 rounded-md transition-colors">
+                  Edit
+                </button>
+                <button
+                  (click)="deleteFood(food)"
+                  class="text-red-600 hover:text-red-900 bg-red-50 hover:bg-red-100 px-3 py-1 rounded-md transition-colors">
+                  Delete
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

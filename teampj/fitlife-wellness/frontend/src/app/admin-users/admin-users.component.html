@@ -1,0 +1,112 @@
+<!-- Admin Header -->
+<header class="bg-white shadow-sm border-b">
+  <div class="container mx-auto px-4 py-4">
+    <div class="flex justify-between items-center">
+      <div>
+        <h1 class="text-2xl font-bold text-green-600">User Management</h1>
+        <p class="text-gray-600">Manage registered users</p>
+      </div>
+      <button
+        (click)="goBack()"
+        class="btn-secondary">
+        ← Back to Dashboard
+      </button>
+    </div>
+  </div>
+</header>
+
+<div class="container mx-auto px-4 py-8">
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="flex justify-center items-center py-12">
+    <div class="w-8 h-8 animate-spin rounded-full border-4 border-green-200 border-t-green-600"></div>
+    <span class="ml-3 text-gray-600">Loading users...</span>
+  </div>
+
+  <!-- Error Message -->
+  <div *ngIf="errorMessage && !isLoading" class="bg-red-50 border border-red-200 rounded-md p-4 mb-6">
+    <p class="text-red-600">{{errorMessage}}</p>
+    <button
+      (click)="loadUsers()"
+      class="mt-2 btn-primary text-sm">
+      Try Again
+    </button>
+  </div>
+
+  <!-- Users Table -->
+  <div *ngIf="!isLoading && !errorMessage" class="card">
+    <!-- Table Header -->
+    <div class="bg-gray-50 px-6 py-4 border-b border-gray-200">
+      <h2 class="text-lg font-semibold text-gray-800">Registered Users ({{users.length}})</h2>
+    </div>
+
+    <div *ngIf="users.length === 0" class="text-center py-12">
+      <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+      </svg>
+      <p class="mt-4 text-gray-500">No users registered yet</p>
+    </div>
+
+    <div *ngIf="users.length > 0" class="overflow-x-auto">
+      <table class="min-w-full divide-y divide-gray-200">
+        <thead class="bg-gray-50">
+          <tr>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Username
+            </th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Email
+            </th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Role
+            </th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Join Date
+            </th>
+            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Actions
+            </th>
+          </tr>
+        </thead>
+        <tbody class="bg-white divide-y divide-gray-200">
+          <tr *ngFor="let user of users" class="hover:bg-gray-50">
+            <td class="px-6 py-4 whitespace-nowrap">
+              <div class="flex items-center">
+                <div class="flex-shrink-0 h-10 w-10">
+                  <div class="h-10 w-10 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center">
+                    <span class="text-white font-medium text-sm">
+                      {{user.username.charAt(0).toUpperCase()}}
+                    </span>
+                  </div>
+                </div>
+                <div class="ml-4">
+                  <div class="text-sm font-medium text-gray-900">{{user.username}}</div>
+                </div>
+              </div>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <div class="text-sm text-gray-900">{{user.email}}</div>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full"
+                [class]="user.role === 'admin' ?
+                  'bg-purple-100 text-purple-800' :
+                  'bg-green-100 text-green-800'">
+                {{user.role}}
+              </span>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+              {{formatDate(user.createdAt)}}
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+              <button
+                (click)="deleteUser(user._id, user.username)"
+                class="text-red-600 hover:text-red-900 bg-red-50 hover:bg-red-100 px-3 py-1 rounded-md transition-colors">
+                Delete
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
